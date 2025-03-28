@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import {} from '@/controllers';
+import { servicesController } from '@/controllers';
 
 // router.use('/examplePath', exampleController);
 // router.use(exampleController);
 
 const router = Router();
+router.use('/services', servicesController);
 
 export default router;
