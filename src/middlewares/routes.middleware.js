@@ -1,10 +1,15 @@
 import { Router } from 'express';
-import { servicesController } from '@/controllers';
+import {
+    exampleController,
+    scheduleController,
+    servicesController,
+} from '@/controllers';
 
-// router.use('/examplePath', exampleController);
 // router.use(exampleController);
 
 const router = Router();
-router.use('/services', servicesController);
+router.use(exampleController);
+router.use(servicesController);
+router.use(scheduleController);
 
 export default router;

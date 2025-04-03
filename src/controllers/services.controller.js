@@ -1,6 +1,27 @@
-import { Controller } from '@/controllers';
+import Controller from '@/controllers/Controller';
+import { servicesModel } from '@/models';
 
-const servicesController = new Controller();
+const servicesController = new Controller({
+    basePath: '/service',
+});
+
+servicesController.get('/get', async () => {
+    return {
+        httpCode: 200,
+        data: {
+            message: 'Project has been executed successfully',
+            success: true,
+        },
+    };
+});
+
+servicesController.get('/all', async () => {
+    const services = await servicesModel.findAll();
+
+    return {
+        data: services,
+    }
+});
 
 const servicesRoutes = servicesController.getRouter();
 

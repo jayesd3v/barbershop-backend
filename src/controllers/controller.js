@@ -1,4 +1,4 @@
-import { env, logger } from '#utils';
+import { env, logger } from '@/utils';
 import { Router } from 'express';
 import { validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
