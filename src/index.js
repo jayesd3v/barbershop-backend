@@ -1,5 +1,5 @@
 import App from '@/server/app';
-import { initializeSequelize } from '@/models';
+import initializeSequelize from '@/models/initializeSequelize';
 import { env } from '@/utils';
 
 const { NODE_ENV } = env;
