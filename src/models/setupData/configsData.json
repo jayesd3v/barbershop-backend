@@ -1,0 +1,128 @@
+[
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_08:00",
+        "value": "true"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_08:30",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_09:00",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_09:30",
+        "value": "true"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_10:00",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_10:30",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_11:00",
+        "value": "true"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_11:30",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_12:00",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_12:30",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_13:00",
+        "value": "true"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_13:30",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_14:00",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_14:30",
+        "value": "true"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_15:00",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_15:30",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_16:00",
+        "value": "true"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_16:30",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_17:00",
+        "value": "false"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_17:30",
+        "value": "true"
+    },
+    {
+        "category": "SLOT",
+        "type": "BOOLEAN",
+        "key": "SLOT_18:00",
+        "value": "false"
+    }
+]

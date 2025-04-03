@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "title": "Adult Haircuts",
+        "price": 4500,
+        "description": "Professional haircut for adults (18-65)",
+        "duration": 45,
+        "maxQuantity": 5,
+        "status": "ACTIVE",
+        "note": ""
+    },
+    {
+        "id": 2,
+        "title": "Junior Haircuts",
+        "price": 4000,
+        "description": "Specialized haircut for children (under 18)",
+        "duration": 45,
+        "maxQuantity": 5,
+        "status": "ACTIVE",
+        "note": ""
+    },
+    {
+        "id": 3,
+        "title": "Senior Haircuts",
+        "price": 4000,
+        "description": "Haircut for seniors (65+)",
+        "duration": 45,
+        "maxQuantity": 5,
+        "status": "ACTIVE",
+        "note": ""
+    },
+    {
+        "id": 4,
+        "title": "Beard Trim",
+        "price": 1500,
+        "description": "Precision beard shaping and trimming",
+        "duration": 30,
+        "maxQuantity": 10,
+        "status": "ACTIVE",
+        "note": ""
+    }
+]
