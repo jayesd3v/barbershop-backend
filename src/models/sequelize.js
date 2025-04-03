@@ -28,11 +28,10 @@ const sequelize = new Sequelize(
             idle: parseInt(DB_POOL_IDLE),
             acquire: parseInt(DB_POOL_CREATE_TIMEOUT),
         },
-        logging: false,
     },
 );
 
-export const debug = async (callback) => {
+export const debugSequelize = async (callback) => {
     sequelize.options.logging = (sql, timing) => {
         logger.info(sql);
     };

@@ -1,5 +1,9 @@
 import { env, logger } from '@/utils';
-import sequelize from '@/models/sequelize';
+
+// only import sequelize { sequelize } from '@/models'
+// to let sequelize know how many models are there at starting time
+import { sequelize } from '@/models'; // don't touch this line
+import generateData from '@/models/generateData';
 
 const {
     NODE_ENV,
@@ -39,6 +43,7 @@ const initializeSequelize = async ({
                 alter,
                 force,
             });
+            await generateData();
         }
 
         sequelize.options.logging = false;

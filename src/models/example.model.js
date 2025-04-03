@@ -1,7 +1,7 @@
-import { sequelize } from '@/models';
+import sequelize from '@/models/sequelize';
 
-const SampleModel = sequelize.define(
-    'sample',
+const exampleModel = sequelize.define(
+    'example',
     {
         id: {
             type: sequelize.Sequelize.INTEGER,
@@ -23,13 +23,13 @@ const SampleModel = sequelize.define(
     },
 );
 
-SampleModel.associate = (models) => {
+exampleModel.associate = (models) => {
     // Define associations here
     // For example:
-    // SampleModel.belongsTo(models.AnotherModel, {
+    // exampleModel.belongsTo(models.anotherModel, {
     //     foreignKey: 'anotherModelId',
     //     as: 'anotherModel',
     // });
 };
 
-export default SampleModel;
+export default exampleModel;
