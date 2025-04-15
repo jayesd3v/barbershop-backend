@@ -22,8 +22,8 @@ export function resolveSpecifier(specifier, isDebug) {
         // on Windows, the path scheme won't work with lstatSync, se we remove it first
         const checkingPath =
             process.platform === 'win32'
-                ? specifier.replace(/^file:(\/)+/, '')
-                : specifier;
+                ? specifier.replace(/^file:(\/){3}/, '')
+                : specifier.replace(/^file:(\/){2}/, '');
 
         const isExist = fs.existsSync(checkingPath);
 
