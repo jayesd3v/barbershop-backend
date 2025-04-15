@@ -31,6 +31,10 @@ const sequelize = new Sequelize(
     },
 );
 
+Sequelize.postgres.DECIMAL.parse = function (value) {
+    return parseFloat(value);
+};
+
 export const debugSequelize = async (callback) => {
     sequelize.options.logging = (sql, timing) => {
         logger.info(sql);

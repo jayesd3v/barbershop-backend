@@ -16,11 +16,13 @@ servicesController.get('/get', async () => {
 });
 
 servicesController.get('/all', async () => {
-    const services = await servicesModel.findAll();
+    const services = await servicesModel.findAll({
+        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+    });
 
     return {
         data: services,
-    }
+    };
 });
 
 const servicesRoutes = servicesController.getRouter();

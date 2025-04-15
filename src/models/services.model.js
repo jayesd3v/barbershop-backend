@@ -1,5 +1,6 @@
 import sequelize from '@/models/sequelize';
 import { DataTypes } from 'sequelize';
+import appointmentDetailsModel from '@/models/appointmentDetails.model';
 
 const servicesModel = sequelize.define(
     'services',
@@ -16,7 +17,7 @@ const servicesModel = sequelize.define(
             allowNull: false,
         },
         price: {
-            type: DataTypes.SMALLINT,
+            type: DataTypes.DECIMAL(10, 2),
             allowNull: false,
             validate: {
                 min: 0,
@@ -53,14 +54,5 @@ const servicesModel = sequelize.define(
         paranoid: true,
     },
 );
-
-servicesModel.associate = (models) => {
-    // Define associations here
-    // For example:
-    // servicesModel.belongsTo(models.anotherModel, {
-    //     foreignKey: 'anotherModelId',
-    //     as: 'anotherModel',
-    // });
-};
 
 export default servicesModel;

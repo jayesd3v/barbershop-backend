@@ -7,7 +7,7 @@ const { NODE_ENV } = env;
 if (NODE_ENV === 'dev') {
     initializeSequelize({
         alter: true,
-        force: false,
+        force: true,
         logging: false,
     });
 }

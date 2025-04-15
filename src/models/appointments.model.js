@@ -6,39 +6,48 @@ const appointmentsModel = sequelize.define(
     {
         firstName: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         lastName: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         phone: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         email: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         address: {
             type: DataTypes.TEXT,
-            allowNull: false,
+            allowNull: true,
         },
         paymentProvider: {
-            type: DataTypes.ENUM('STRIPE_CARD', 'VENMO'),
-            allowNull: false,
+            type: DataTypes.ENUM('STRIPE', 'VENMO'),
+            allowNull: true,
         },
         paymentReference: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         paymentStatus: {
             type: DataTypes.ENUM('PENDING', 'COMPLETED'),
+            allowNull: true,
+        },
+        holdingId: {
+            type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: 'PENDING',
         },
         status: {
-            type: DataTypes.ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED'),
+            type: DataTypes.ENUM(
+                'HOLDING',
+                'PENDING',
+                'CONFIRMED',
+                'COMPLETED',
+                'CANCELED',
+            ),
             allowNull: false,
             defaultValue: 'PENDING',
         },
@@ -60,7 +69,5 @@ const appointmentsModel = sequelize.define(
         paranoid: true,
     },
 );
-
-appointmentsModel.associate = (models) => {};
 
 export default appointmentsModel;

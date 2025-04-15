@@ -2,7 +2,12 @@ import { env, logger } from '@/utils';
 
 // only import sequelize { sequelize } from '@/models'
 // to let sequelize know how many models are there at starting time
-import { sequelize } from '@/models'; // don't touch this line
+import {
+    appointmentDetailsModel,
+    appointmentsModel,
+    sequelize,
+    servicesModel,
+} from '@/models'; // don't touch this line
 import generateData from '@/models/generateData';
 
 const {
@@ -45,6 +50,25 @@ const initializeSequelize = async ({
             });
             await generateData();
         }
+
+        appointmentsModel.hasMany(appointmentDetailsModel, {
+            foreignKey: 'appointmentId',
+            as: 'appointmentDetails',
+        });
+
+        appointmentDetailsModel.belongsTo(appointmentsModel, {
+            foreignKey: 'appointmentId',
+            as: 'appointment',
+        });
+        appointmentDetailsModel.belongsTo(servicesModel, {
+            foreignKey: 'serviceId',
+            as: 'service',
+        });
+
+        servicesModel.hasMany(appointmentDetailsModel, {
+            foreignKey: 'serviceId',
+            as: 'appointmentDetails',
+        });
 
         sequelize.options.logging = false;
     } catch (e) {

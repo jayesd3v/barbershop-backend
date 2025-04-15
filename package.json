@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "dev": "npx nodemon",
+        "dev:windows": "start tools/stripe/windows/stripe listen --forward-to localhost:8080/payment/webhook && npm run dev",
         "start": "node --import ./scripts/custom-loader/register.js ./src/index.js",
         "switch-env": "node scripts/switch-env/switchEnv.js",
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,6 +23,7 @@
     "type": "module",
     "homepage": "https://github.com/jayesd3v/xprs#readme",
     "dependencies": {
+        "blake2b": "^2.1.4",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
@@ -36,6 +38,7 @@
         "pg": "^8.14.1",
         "pg-hstore": "^2.3.4",
         "sequelize": "^6.37.7",
+        "stripe": "^18.0.0",
         "winston": "^3.17.0"
     },
     "engines": {

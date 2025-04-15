@@ -1,46 +1,65 @@
 import Controller from '@/controllers/Controller';
-import { appointmentsModel, configsModel, servicesModel } from '@/models';
-import { debugSequelize } from '@/models/sequelize';
-import { logger } from '@/utils';
 import {
+    appointmentDetailsModel,
+    appointmentsModel,
+    configsModel,
+    servicesModel,
+} from '@/models';
+import { env, logger } from '@/utils';
+import { compareTimeHash, getHashTime } from '@/utils/generalUtil';
+import {
+    convertToMomentDate,
     getBusinessDate,
     getBusinessDateTime,
     getDate,
     getDateTime,
-} from '@/utils/converter';
+} from '@/utils/time';
 import moment from 'moment-timezone';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
+
+const { TIMEZONE = 'America/Los_Angeles' } = env;
 
 const scheduleController = new Controller({
     basePath: '/schedule',
 });
 
-const getAvailableSlots = (matrix, date, duration, slot) => {};
+const parseQuantity = (services) => {
+    // form of services is [serviceId]:[quantity]|[serviceId]:[quantity]|...
+    return services.split('|').reduce((acc, service) => {
+        const [id, quantity] = service.split(':');
+        acc[id] = parseInt(quantity);
+        return acc;
+    }, {});
+};
+
+const getSelectedServices = async (serviceIds) => {
+    return await servicesModel.findAll({
+        where: {
+            id: serviceIds,
+        },
+    });
+};
 
 scheduleController.get(
     '/availability',
     async ({ query, params, headers, session }) => {
         const { startDate, endDate, services } = query;
-        const startDateObj = getDate(startDate);
+        const today = moment.tz('America/New_York').startOf('day');
+        // get latest date between startDate and today
+        let startDateObj = getDate(startDate);
+        if (startDateObj.isBefore(today)) {
+            startDateObj = today;
+        }
         const endDateObj = getDate(endDate);
 
-        // form of services is [serviceId]:[quantity]|[serviceId]:[quantity]|...
-        const parsedServices = services.split('|').map((service) => {
-            const [id, quantity] = service.split(':');
-            return { id: parseInt(id), quantity: parseInt(quantity) };
-        });
-
-        const selectedServices = await servicesModel.findAll({
-            where: {
-                id: parsedServices.map((service) => service.id),
-            },
-        });
+        const parsedQuantity = parseQuantity(services);
+        const selectedServices = await getSelectedServices(
+            Object.keys(parsedQuantity).map(Number),
+        );
 
         const duration = selectedServices.reduce((acc, service) => {
             const serviceDuration = service.duration;
-            const serviceQuantity = parsedServices.find(
-                (s) => s.id === service.id,
-            ).quantity;
+            const serviceQuantity = parsedQuantity[service.id];
             return acc + serviceDuration * serviceQuantity;
         }, 0);
 
@@ -60,16 +79,53 @@ scheduleController.get(
 
         const appointmentsWithinRange = await appointmentsModel.findAll({
             where: {
-                start: {
-                    [Op.between]: [startDateObj, paddedEndDateObj],
-                },
+                [Op.and]: [
+                    {
+                        start: {
+                            [Op.between]: [
+                                startDateObj.toDate(),
+                                paddedEndDateObj.toDate(),
+                            ],
+                        },
+                    },
+                    {
+                        [Op.or]: [
+                            {
+                                status: {
+                                    [Op.in]: [
+                                        'PENDING',
+                                        'CONFIRMED',
+                                        'COMPLETED',
+                                    ],
+                                },
+                            },
+                            {
+                                [Op.and]: [
+                                    {
+                                        createdAt: {
+                                            [Op.gt]: Sequelize.literal(
+                                                "NOW() - (INTERVAL '10 MINUTE')",
+                                            ),
+                                        },
+                                    },
+                                    {
+                                        status: {
+                                            [Op.in]: ['HOLDING'],
+                                        },
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
             },
         });
 
         const appointmentsMatrix = appointmentsWithinRange.reduce(
             (acc, appointment) => {
                 const { start } = appointment;
-                const businessDate = getBusinessDate(start);
+                const startObj = convertToMomentDate(start);
+                const businessDate = getBusinessDate(startObj);
                 if (Array.isArray(acc?.[businessDate])) {
                     acc[businessDate].push(appointment);
                 } else {
@@ -91,36 +147,42 @@ scheduleController.get(
                 const slotStart = getDateTime(businessDate, `${slot}:00`);
                 const slotEnd = slotStart.clone().add(duration, 'minutes');
 
-                const isAvailable = !appointmentsMatrix[businessDate]?.some(
-                    (appointment) => {
-                        const appointmentStart = moment(appointment.start);
-                        const appointmentEnd = moment(appointment.end);
+                const appointmentsExisted = appointmentsMatrix[
+                    businessDate
+                ]?.some((appointment) => {
+                    const appointmentStart = moment(appointment.start);
+                    const appointmentEnd = moment(appointment.end);
 
-                        return (
-                            slotStart.isBetween(
-                                appointmentStart,
-                                appointmentEnd,
-                                null,
-                                '[]',
-                            ) ||
-                            slotEnd.isBetween(
-                                appointmentStart,
-                                appointmentEnd,
-                                null,
-                                '[]',
-                            ) ||
-                            (slotStart.isSame(appointmentStart) &&
-                                slotEnd.isSame(appointmentEnd))
-                        );
-                    },
-                );
+                    return (
+                        slotStart.isBetween(
+                            appointmentStart,
+                            appointmentEnd,
+                            null,
+                            '[]',
+                        ) ||
+                        slotEnd.isBetween(
+                            appointmentStart,
+                            appointmentEnd,
+                            null,
+                            '[]',
+                        ) ||
+                        (slotStart.isSame(appointmentStart) &&
+                            slotEnd.isSame(appointmentEnd))
+                    );
+                });
+
+                const isAvailable = !appointmentsExisted;
 
                 if (isAvailable) {
+                    const start = slotStart.unix();
+                    const end = slotEnd.unix();
+                    const label = slotStart.format('hh:mm A');
+                    const holdingId = getHashTime(start, end);
                     acc.push({
-                        // start: slotStart.format('YYYY-MM-DD HH:mm:ss'),
-                        label: slotStart.format('hh:mm A'),
-                        start: slotStart.unix(),
-                        end: slotEnd.unix(),
+                        holdingId,
+                        label,
+                        start,
+                        end,
                     });
                 }
 
@@ -135,18 +197,199 @@ scheduleController.get(
     },
 );
 
-scheduleController.post(
-    '/post',
-    async ({ body, query, params, headers, session }) => {
+scheduleController.get('/holdingInfo/:holdingId', async ({ params }) => {
+    const { holdingId } = params;
+
+    const appointment = await appointmentsModel.findOne({
+        where: {
+            holdingId,
+            [Op.and]: [
+                {
+                    createdAt: {
+                        [Op.gt]: Sequelize.literal(
+                            "NOW() - (INTERVAL '10 MINUTE')",
+                        ),
+                    },
+                },
+                {
+                    status: {
+                        [Op.in]: ['HOLDING'],
+                    },
+                },
+            ],
+        },
+        include: [
+            {
+                model: appointmentDetailsModel,
+                as: 'appointmentDetails',
+                attributes: [['serviceId', 'id'], 'quantity'],
+            },
+        ],
+    });
+    if (!appointment) {
         return {
-            httpCode: 200,
+            httpCode: 404,
             data: {
-                message: 'Project has been started successfully',
-                success: true,
+                success: false,
+                reasonCode: 'APPOINTMENT_NOT_FOUND',
             },
         };
-    },
-);
+    }
+    return {
+        httpCode: 200,
+        data: {
+            success: true,
+            holdingStart: moment(appointment.createdAt).unix(),
+            appointmentDetails: appointment.appointmentDetails,
+        },
+    };
+});
+
+scheduleController.post('/hold', async ({ body }) => {
+    const { start, end, holdingId, services } = body;
+    if (!compareTimeHash(holdingId, start, end)) {
+        return {
+            httpCode: 400,
+            data: {
+                success: false,
+                reasonCode: 'SLOT_ID_MISMATCH',
+            },
+        };
+    }
+
+    const parsedQuantity = parseQuantity(services);
+    const selectedServices = await getSelectedServices(
+        Object.keys(parsedQuantity).map(Number),
+    );
+
+    const duration = selectedServices.reduce((acc, service) => {
+        const serviceDuration = service.duration;
+        const serviceQuantity = parsedQuantity[service.id];
+        return acc + serviceDuration * serviceQuantity;
+    }, 0);
+
+    if (duration * 60 !== end - start) {
+        return {
+            httpCode: 400,
+            data: {
+                success: false,
+                reasonCode: 'DURATION_MISMATCH',
+            },
+        };
+    }
+
+    const startObj = moment.unix(start).tz(TIMEZONE);
+    const endObj = moment.unix(end).tz(TIMEZONE);
+
+    const isAppointmentExisted = await appointmentsModel.findOne({
+        where: {
+            [Op.and]: [
+                {
+                    start: {
+                        [Op.between]: [startObj.toDate(), endObj.toDate()],
+                    },
+                    end: {
+                        [Op.between]: [startObj.toDate(), endObj.toDate()],
+                    },
+                },
+                {
+                    [Op.or]: [
+                        {
+                            status: {
+                                [Op.in]: ['PENDING', 'CONFIRMED', 'COMPLETED'],
+                            },
+                        },
+                        {
+                            [Op.and]: [
+                                {
+                                    createdAt: {
+                                        [Op.gt]: Sequelize.literal(
+                                            "NOW() - (INTERVAL '10 MINUTE')",
+                                        ),
+                                    },
+                                },
+                                {
+                                    status: {
+                                        [Op.in]: ['HOLDING'],
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+
+    if (isAppointmentExisted) {
+        return {
+            httpCode: 500,
+            data: {
+                success: false,
+                reasonCode: 'APPOINTMENT_EXISTED',
+            },
+        };
+    }
+
+    const appointment = await Controller.transaction(async (transaction) => {
+        const draftAppointment = await appointmentsModel.create(
+            {
+                holdingId: holdingId,
+                start: startObj.toDate(),
+                end: endObj.toDate(),
+                status: 'HOLDING',
+            },
+            {
+                transaction,
+            },
+        );
+
+        logger.logOnDevelopment(
+            `Draft appointment created with holdingId: ${draftAppointment.holdingId}`,
+        );
+
+        const appointmentDetails = selectedServices.map((service) => ({
+            appointmentId: draftAppointment.id,
+            serviceId: service.id,
+            quantity: parsedQuantity[service.id],
+        }));
+
+        await Promise.all(
+            appointmentDetails.map((detail) =>
+                appointmentDetailsModel.create(detail, {
+                    transaction,
+                }),
+            ),
+        );
+
+        logger.logOnDevelopment(
+            `Appointment details created for appointmentId (${
+                draftAppointment.id
+            }):\n${JSON.stringify(appointmentDetails)}`,
+        );
+
+        return draftAppointment;
+    });
+
+    if (!appointment) {
+        return {
+            httpCode: 500,
+            data: {
+                reasonCode: 'CREATE_APPOINTMENT_FAILED',
+                success: false,
+            },
+        };
+    }
+
+    return {
+        httpCode: 200,
+        data: {
+            success: true,
+            holdingId: appointment.holdingId,
+            holdingStart: moment(appointment.createdAt).unix(),
+        },
+    };
+});
 
 const scheduleRoutes = scheduleController.getRouter();
 

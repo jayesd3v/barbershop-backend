@@ -1,3 +1,4 @@
+import { sequelize } from '@/models';
 import { env, logger } from '@/utils';
 import { Router } from 'express';
 import { validationResult } from 'express-validator';
@@ -114,9 +115,9 @@ class Controller {
     static async transaction(callback) {
         const transaction = await sequelize.transaction();
         try {
-            await callback(transaction);
+            const result = await callback(transaction);
             await transaction.commit();
-            return true;
+            return result;
         } catch (err) {
             logger.error(err);
             await transaction.rollback();
@@ -153,6 +154,7 @@ class Controller {
             const session = req.session;
             const query = req.query;
             const body = req.body;
+            const rawBody = req?.rawBody;
             const params = req.params;
             let user = null;
 
@@ -206,6 +208,7 @@ class Controller {
                     query,
                     headers,
                     body,
+                    rawBody,
                     data: {
                         // SHOULD BE USED FOR DEBUGGING ONLY
                         ...req?.params,

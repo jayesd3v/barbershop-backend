@@ -1,5 +1,10 @@
 import Controller from '@/controllers/Controller';
 
+/***
+ * Everytime you creates a new controller
+ * Import it through the index.js file
+ * and use it in the routes middleware
+ */
 const exampleController = new Controller({
     basePath: '/example',
 });
@@ -16,7 +21,7 @@ exampleController.get('/get', async ({ query, params, headers, session }) => {
 
 exampleController.post(
     '/post',
-    async ({ body, query, params, headers, session }) => {
+    async ({ body, query, params, headers, session, rawBody }) => {
         return {
             httpCode: 200,
             data: {
