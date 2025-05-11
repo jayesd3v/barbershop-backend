@@ -18,7 +18,13 @@ paymentController.post(
     '/create-checkout-session/:holdingId',
     async ({ params, body }) => {
         const { holdingId } = params;
-        const { firstName, lastName, phone, email } = body;
+        const {
+            firstName,
+            lastName,
+            phone,
+            email,
+            location: { address, lat: latitude, lng: longitude },
+        } = body;
         const appointment = await appointmentsModel.findOne({
             where: {
                 holdingId,
@@ -92,6 +98,9 @@ paymentController.post(
                 lastName,
                 phone,
                 email,
+                address,
+                latitude,
+                longitude,
             },
             {
                 where: {

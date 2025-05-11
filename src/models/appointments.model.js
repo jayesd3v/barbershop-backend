@@ -1,5 +1,5 @@
 import sequelize from '@/models/sequelize';
-import { DataTypes } from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 
 const appointmentsModel = sequelize.define(
     'appointments',
@@ -22,6 +22,14 @@ const appointmentsModel = sequelize.define(
         },
         address: {
             type: DataTypes.TEXT,
+            allowNull: true,
+        },
+        latitude: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+        },
+        longitude: {
+            type: DataTypes.DOUBLE,
             allowNull: true,
         },
         paymentProvider: {
